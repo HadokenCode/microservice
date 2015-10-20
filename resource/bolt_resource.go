@@ -88,10 +88,6 @@ func (res *Bolt) Delete(id uint64) error {
 	})
 }
 
-func (res *Bolt) GetType() reflect.Type {
-	return res.Type
-}
-
 func parseKey(u uint64) []byte {
 	k := make([]byte, 8)
 	binary.BigEndian.PutUint64(k, u)

@@ -9,7 +9,10 @@ import (
 	"strconv"
 )
 
-type Resource struct{ Res resource.Interface }
+type Resource struct {
+	Res  resource.Interface
+	Type reflect.Type
+}
 
 func (svc *Resource) Get(w http.ResponseWriter, r *http.Request) {
 	ErrorHandler(w, func() error {
@@ -34,7 +37,7 @@ func (svc *Resource) Put(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		entity, err := unmarshalBody(r, svc.Res.GetType())
+		entity, err := unmarshalBody(r, svc.Type)
 		if err != nil {
 			return err
 		}
@@ -47,7 +50,7 @@ func (svc *Resource) Put(w http.ResponseWriter, r *http.Request) {
 
 func (svc *Resource) Post(w http.ResponseWriter, r *http.Request) {
 	ErrorHandler(w, func() error {
-		entity, err := unmarshalBody(r, svc.Res.GetType())
+		entity, err := unmarshalBody(r, svc.Type)
 		if err != nil {
 			return err
 		}
@@ -68,7 +71,7 @@ func (svc *Resource) Delete(w http.ResponseWriter, r *http.Request) {
 		if err := svc.Res.Delete(id); err != nil {
 			return &json.Error{500, "problem deleting entity", err}
 		}
-		return json.WriteResponse(w, id, svc.Res.GetType())
+		return json.WriteResponse(w, id, svc.Type)
 	})
 }
 

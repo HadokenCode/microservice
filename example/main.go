@@ -37,6 +37,7 @@ func main() {
 			Bucket: bucket,
 			Type:   reflect.TypeOf(Bio{}),
 		},
+		Type: reflect.TypeOf(Bio{}),
 	}
 
 	log.Println("Listening on :8080")
