@@ -19,7 +19,7 @@ type Bolt struct {
 }
 
 func (res *Bolt) Get(id uint64) (interface{}, error) {
-	entity := reflect.New(res.Type).Interface()
+	var entity interface{}
 	err := res.DB.View(func(tx *bolt.Tx) (err error) {
 		b := tx.Bucket(res.Bucket)
 		if b == nil {
