@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/boltdb/bolt"
-	"github.com/scjudd/microservice/resource"
-	"github.com/scjudd/microservice/service"
+	"github.com/scjudd/microservice/resources"
+	"github.com/scjudd/microservice/services"
 	"log"
 	"net/http"
 	"reflect"
@@ -31,8 +31,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	svc := &service.Resource{
-		Res: &resource.Bolt{
+	svc := &services.CRUD{
+		Resource: &resources.Bolt{
 			DB:     db,
 			Bucket: bucket,
 			Type:   reflect.TypeOf(Bio{}),
@@ -41,7 +41,7 @@ func main() {
 	}
 
 	log.Println("Listening on :8080")
-	if err := http.ListenAndServe(":8080", service.Routes(svc)); err != nil {
+	if err := http.ListenAndServe(":8080", svc.Handler()); err != nil {
 		log.Fatal(err)
 	}
 }

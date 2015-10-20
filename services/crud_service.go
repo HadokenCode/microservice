@@ -1,28 +1,29 @@
-package service
+package services
 
 import (
+	"github.com/bmizerany/pat"
 	"github.com/scjudd/microservice/json"
-	"github.com/scjudd/microservice/resource"
+	"github.com/scjudd/microservice/resources"
 	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strconv"
 )
 
-type Resource struct {
-	Res  resource.Interface
-	Type reflect.Type
+type CRUD struct {
+	Resource resources.Interface
+	Type     reflect.Type
 }
 
-func (svc *Resource) Get(w http.ResponseWriter, r *http.Request) {
+func (svc *CRUD) Get(w http.ResponseWriter, r *http.Request) {
 	ErrorHandler(w, func() error {
 		id, err := getID(r)
 		if err != nil {
 			return err
 		}
-		entity, err := svc.Res.Get(id)
+		entity, err := svc.Resource.Get(id)
 		if err != nil {
-			if err == resource.ErrDoesNotExist {
+			if err == resources.ErrDoesNotExist {
 				return &json.Error{404, "entity does not exist", err}
 			}
 			return &json.Error{500, "problem getting requested entity", err}
@@ -31,7 +32,7 @@ func (svc *Resource) Get(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (svc *Resource) Put(w http.ResponseWriter, r *http.Request) {
+func (svc *CRUD) Put(w http.ResponseWriter, r *http.Request) {
 	ErrorHandler(w, func() error {
 		id, err := getID(r)
 		if err != nil {
@@ -41,20 +42,20 @@ func (svc *Resource) Put(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
-		if err := svc.Res.Put(id, entity); err != nil {
+		if err := svc.Resource.Put(id, entity); err != nil {
 			return &json.Error{500, "problem storing entity", err}
 		}
 		return json.WriteResponse(w, id, entity)
 	})
 }
 
-func (svc *Resource) Post(w http.ResponseWriter, r *http.Request) {
+func (svc *CRUD) Post(w http.ResponseWriter, r *http.Request) {
 	ErrorHandler(w, func() error {
 		entity, err := unmarshalBody(r, svc.Type)
 		if err != nil {
 			return err
 		}
-		id, err := svc.Res.Post(entity)
+		id, err := svc.Resource.Post(entity)
 		if err != nil {
 			return &json.Error{500, "problem storing entity", err}
 		}
@@ -62,17 +63,26 @@ func (svc *Resource) Post(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (svc *Resource) Delete(w http.ResponseWriter, r *http.Request) {
+func (svc *CRUD) Delete(w http.ResponseWriter, r *http.Request) {
 	ErrorHandler(w, func() error {
 		id, err := getID(r)
 		if err != nil {
 			return err
 		}
-		if err := svc.Res.Delete(id); err != nil {
+		if err := svc.Resource.Delete(id); err != nil {
 			return &json.Error{500, "problem deleting entity", err}
 		}
 		return json.WriteResponse(w, id, svc.Type)
 	})
+}
+
+func (svc *CRUD) Handler() http.Handler {
+	m := pat.New()
+	m.Get("/:id", http.HandlerFunc(svc.Get))
+	m.Put("/:id", http.HandlerFunc(svc.Put))
+	m.Post("/", http.HandlerFunc(svc.Post))
+	m.Del("/:id", http.HandlerFunc(svc.Delete))
+	return m
 }
 
 func getID(r *http.Request) (uint64, error) {
