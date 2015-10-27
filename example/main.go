@@ -24,13 +24,10 @@ func main() {
 
 	bucket := []byte("bios")
 
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(bucket)
-		return err
+	db.Update(func(tx *bolt.Tx) error {
+		tx.CreateBucketIfNotExists(bucket)
+		return nil
 	})
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	svc := &services.CRUD{
 		Resource: &resources.Bolt{
