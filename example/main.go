@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/boltdb/bolt"
+	"github.com/gorilla/mux"
 	"github.com/scjudd/microservice/resources"
 	"github.com/scjudd/microservice/services"
 	"log"
@@ -40,8 +41,14 @@ func main() {
 		Type: reflect.TypeOf(Bio{}),
 	}
 
+	r := mux.NewRouter()
+	r.HandleFunc("/bios/{id:[0-9]+}", svc.Get).Methods("GET")
+	r.HandleFunc("/bios/{id:[0-9]+}", svc.Put).Methods("PUT")
+	r.HandleFunc("/bios/", svc.Post).Methods("POST")
+	r.HandleFunc("/bios/{id:[0-9]+}", svc.Delete).Methods("DELETE")
+
 	log.Println("Listening on :8080")
-	if err := http.ListenAndServe(":8080", svc.Handler()); err != nil {
+	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -1,18 +1,28 @@
 package services
 
 import (
-	"github.com/bmizerany/pat"
+	"github.com/gorilla/mux"
 	"github.com/scjudd/microservice/json"
 	"github.com/scjudd/microservice/resources"
 	"io/ioutil"
 	"net/http"
+	"path"
 	"reflect"
 	"strconv"
 )
 
 type CRUD struct {
 	Resource resources.Interface
+	Path     string
 	Type     reflect.Type
+}
+
+type Entity struct {
+	Id   uint64      `json:"id"`
+	Href string      `json:"href"`
+	Data interface{} `json:"data"`
+}
+
 }
 
 func (svc *CRUD) Get(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +38,12 @@ func (svc *CRUD) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			return &json.Error{500, "problem getting requested entity", err}
 		}
-		return json.WriteResponse(w, id, entity)
+		data, err := json.Marshal(Entity{id, path.Join(svc.Path, uint64toa(id)), entity})
+		if err != nil {
+			return &json.Error{500, "problem marshalling requested entity", err}
+		}
+		w.Write(data)
+		return nil
 	})
 }
 
@@ -45,7 +60,12 @@ func (svc *CRUD) Put(w http.ResponseWriter, r *http.Request) {
 		if err := svc.Resource.Put(id, entity); err != nil {
 			return &json.Error{500, "problem storing entity", err}
 		}
-		return json.WriteResponse(w, id, entity)
+		data, err := json.Marshal(Entity{id, path.Join(svc.Path, uint64toa(id)), entity})
+		if err != nil {
+			return &json.Error{500, "problem marshalling requested entity", err}
+		}
+		w.Write(data)
+		return nil
 	})
 }
 
@@ -59,7 +79,12 @@ func (svc *CRUD) Post(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return &json.Error{500, "problem storing entity", err}
 		}
-		return json.WriteResponse(w, id, entity)
+		data, err := json.Marshal(Entity{id, path.Join(svc.Path, uint64toa(id)), entity})
+		if err != nil {
+			return &json.Error{500, "problem marshalling requested entity", err}
+		}
+		w.Write(data)
+		return nil
 	})
 }
 
@@ -72,21 +97,25 @@ func (svc *CRUD) Delete(w http.ResponseWriter, r *http.Request) {
 		if err := svc.Resource.Delete(id); err != nil {
 			return &json.Error{500, "problem deleting entity", err}
 		}
-		return json.WriteResponse(w, id, svc.Type)
+		data, err := json.Marshal(svc.Type)
+		if err != nil {
+			return &json.Error{500, "problem marshalling requested entity", err}
+		}
+		w.Write(data)
+		return nil
 	})
 }
 
-func (svc *CRUD) Handler() http.Handler {
-	m := pat.New()
-	m.Get("/:id", http.HandlerFunc(svc.Get))
-	m.Put("/:id", http.HandlerFunc(svc.Put))
-	m.Post("/", http.HandlerFunc(svc.Post))
-	m.Del("/:id", http.HandlerFunc(svc.Delete))
-	return m
+func uint64toa(i uint64) string {
+	return strconv.Itoa(int(i))
 }
 
 func getID(r *http.Request) (uint64, error) {
-	id, err := strconv.ParseUint(r.URL.Query().Get(":id"), 10, 64)
+	idStr, ok := mux.Vars(r)["id"]
+	if !ok {
+		return 0, &json.Error{400, "missing 'id' parameter", nil}
+	}
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		return id, &json.Error{400, "missing or bad 'id' parameter", err}
 	}
