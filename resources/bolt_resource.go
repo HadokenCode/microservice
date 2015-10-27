@@ -17,11 +17,6 @@ type Bolt struct {
 	Type   reflect.Type
 }
 
-type KV struct {
-	Key   uint64
-	Value interface{}
-}
-
 func (res *Bolt) Iter() <-chan KV {
 	ch := make(chan KV)
 	go res.DB.View(func(tx *bolt.Tx) error {
