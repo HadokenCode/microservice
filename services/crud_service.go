@@ -15,14 +15,6 @@ type CRUD struct {
 	Type     reflect.Type
 }
 
-type Entity struct {
-	Id   uint64      `json:"id"`
-	Href string      `json:"href"`
-	Data interface{} `json:"data"`
-}
-
-}
-
 func (svc *CRUD) Get(w http.ResponseWriter, r *http.Request) {
 	errors.Handler(w, func() error {
 		id, err := getID(r)
