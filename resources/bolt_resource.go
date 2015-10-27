@@ -18,6 +18,29 @@ type Bolt struct {
 	Type   reflect.Type
 }
 
+type KV struct {
+	Key   uint64
+	Value interface{}
+}
+
+func (res *Bolt) Iter() <-chan KV {
+	ch := make(chan KV)
+	go res.DB.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(res.Bucket)
+		c := b.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			entity, err := gob.Unmarshal(v, res.Type)
+			if err != nil {
+				return err
+			}
+			ch <- KV{binary.BigEndian.Uint64(k), entity}
+		}
+		close(ch)
+		return nil
+	})
+	return ch
+}
+
 func (res *Bolt) Get(id uint64) (interface{}, error) {
 	var entity interface{}
 	err := res.DB.View(func(tx *bolt.Tx) (err error) {

@@ -9,6 +9,7 @@ var (
 )
 
 type Interface interface {
+	Iter() <-chan KV
 	Get(id uint64) (interface{}, error)
 	Put(id uint64, entity interface{}) error
 	Post(entity interface{}) (uint64, error)
