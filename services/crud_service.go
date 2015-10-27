@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/scjudd/microservice/errors"
 	"github.com/scjudd/microservice/json"
 	"github.com/scjudd/microservice/resources"
 	"io/ioutil"
@@ -26,7 +27,7 @@ type Entity struct {
 }
 
 func (svc *CRUD) Get(w http.ResponseWriter, r *http.Request) {
-	ErrorHandler(w, func() error {
+	errors.Handler(w, func() error {
 		id, err := getID(r)
 		if err != nil {
 			return err
@@ -34,13 +35,13 @@ func (svc *CRUD) Get(w http.ResponseWriter, r *http.Request) {
 		entity, err := svc.Resource.Get(id)
 		if err != nil {
 			if err == resources.ErrDoesNotExist {
-				return &json.Error{404, "entity does not exist", err}
+				return &errors.Error{404, "entity does not exist", err}
 			}
-			return &json.Error{500, "problem getting requested entity", err}
+			return &errors.Error{500, "problem getting requested entity", err}
 		}
 		data, err := json.Marshal(Entity{id, path.Join(svc.Path, uint64toa(id)), entity})
 		if err != nil {
-			return &json.Error{500, "problem marshalling requested entity", err}
+			return &errors.Error{500, "problem marshalling requested entity", err}
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
@@ -49,7 +50,7 @@ func (svc *CRUD) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (svc *CRUD) Put(w http.ResponseWriter, r *http.Request) {
-	ErrorHandler(w, func() error {
+	errors.Handler(w, func() error {
 		id, err := getID(r)
 		if err != nil {
 			return err
@@ -59,11 +60,11 @@ func (svc *CRUD) Put(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 		if err := svc.Resource.Put(id, entity); err != nil {
-			return &json.Error{500, "problem storing entity", err}
+			return &errors.Error{500, "problem storing entity", err}
 		}
 		data, err := json.Marshal(Entity{id, path.Join(svc.Path, uint64toa(id)), entity})
 		if err != nil {
-			return &json.Error{500, "problem marshalling requested entity", err}
+			return &errors.Error{500, "problem marshalling requested entity", err}
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
@@ -72,18 +73,18 @@ func (svc *CRUD) Put(w http.ResponseWriter, r *http.Request) {
 }
 
 func (svc *CRUD) Post(w http.ResponseWriter, r *http.Request) {
-	ErrorHandler(w, func() error {
+	errors.Handler(w, func() error {
 		entity, err := unmarshalBody(r, svc.Type)
 		if err != nil {
 			return err
 		}
 		id, err := svc.Resource.Post(entity)
 		if err != nil {
-			return &json.Error{500, "problem storing entity", err}
+			return &errors.Error{500, "problem storing entity", err}
 		}
 		data, err := json.Marshal(Entity{id, path.Join(svc.Path, uint64toa(id)), entity})
 		if err != nil {
-			return &json.Error{500, "problem marshalling requested entity", err}
+			return &errors.Error{500, "problem marshalling requested entity", err}
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
@@ -92,17 +93,17 @@ func (svc *CRUD) Post(w http.ResponseWriter, r *http.Request) {
 }
 
 func (svc *CRUD) Delete(w http.ResponseWriter, r *http.Request) {
-	ErrorHandler(w, func() error {
+	errors.Handler(w, func() error {
 		id, err := getID(r)
 		if err != nil {
 			return err
 		}
 		if err := svc.Resource.Delete(id); err != nil {
-			return &json.Error{500, "problem deleting entity", err}
+			return &errors.Error{500, "problem deleting entity", err}
 		}
 		data, err := json.Marshal(svc.Type)
 		if err != nil {
-			return &json.Error{500, "problem marshalling requested entity", err}
+			return &errors.Error{500, "problem marshalling requested entity", err}
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)

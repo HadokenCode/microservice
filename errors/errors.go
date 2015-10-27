@@ -1,4 +1,4 @@
-package json
+package errors
 
 type Error struct {
 	Status  int    `json:"status"`

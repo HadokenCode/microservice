@@ -1,4 +1,4 @@
-package services
+package errors
 
 import (
 	"github.com/scjudd/microservice/json"
@@ -6,20 +6,21 @@ import (
 	"net/http"
 )
 
-func ErrorHandler(w http.ResponseWriter, h func() error) {
+func Handler(w http.ResponseWriter, h func() error) {
 	if err := h(); err != nil {
-		serr, ok := err.(*json.Error)
+		serr, ok := err.(*Error)
 		if !ok {
-			serr = &json.Error{500, "internal server error", err}
+			serr = &Error{500, "internal server error", err}
 		}
 		data, err := json.Marshal(serr)
 		if err != nil {
-			serr = &json.Error{500, "problem marshalling json error", err}
+			serr = &Error{500, "problem marshalling error", err}
 		}
 		if serr.Err != nil {
 			log.Println(serr.Error())
 		}
 		w.WriteHeader(serr.Status)
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 	}
 }
