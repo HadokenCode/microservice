@@ -42,6 +42,7 @@ func (svc *CRUD) Get(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return &json.Error{500, "problem marshalling requested entity", err}
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 		return nil
 	})
@@ -64,6 +65,7 @@ func (svc *CRUD) Put(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return &json.Error{500, "problem marshalling requested entity", err}
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 		return nil
 	})
@@ -83,6 +85,7 @@ func (svc *CRUD) Post(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return &json.Error{500, "problem marshalling requested entity", err}
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 		return nil
 	})
@@ -101,6 +104,7 @@ func (svc *CRUD) Delete(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return &json.Error{500, "problem marshalling requested entity", err}
 		}
+		w.Header().Set("Content-Type", "application/json")
 		w.Write(data)
 		return nil
 	})
