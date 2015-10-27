@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"github.com/scjudd/microservice/json"
+	"encoding/json"
 	"log"
 	"net/http"
 )

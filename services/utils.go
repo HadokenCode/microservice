@@ -1,9 +1,10 @@
 package services
 
 import (
+	"bytes"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/scjudd/microservice/errors"
-	"github.com/scjudd/microservice/json"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -32,8 +33,8 @@ func unmarshalBody(r *http.Request, typ reflect.Type) (interface{}, error) {
 		return nil, &errors.Error{500, "problem reading request body", err}
 	}
 	defer r.Body.Close()
-	entity, err := json.Unmarshal(body, typ)
-	if err != nil {
+	entity := reflect.New(typ).Interface()
+	if err := json.NewDecoder(bytes.NewReader(body)).Decode(entity); err != nil {
 		return nil, &errors.Error{500, "problem unmarshalling entity", err}
 	}
 	return entity, nil

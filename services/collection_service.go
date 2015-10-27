@@ -1,8 +1,8 @@
 package services
 
 import (
+	"encoding/json"
 	"github.com/scjudd/microservice/errors"
-	"github.com/scjudd/microservice/json"
 	"github.com/scjudd/microservice/resources"
 	"net/http"
 	"path"
