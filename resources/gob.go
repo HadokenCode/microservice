@@ -1,4 +1,4 @@
-package gob
+package resources
 
 import (
 	"bytes"
@@ -6,14 +6,14 @@ import (
 	"reflect"
 )
 
-func Marshal(entity interface{}) ([]byte, error) {
+func gobMarshal(entity interface{}) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	enc := gob.NewEncoder(buf)
 	err := enc.Encode(entity)
 	return buf.Bytes(), err
 }
 
-func Unmarshal(b []byte, typ reflect.Type) (interface{}, error) {
+func gobUnmarshal(b []byte, typ reflect.Type) (interface{}, error) {
 	entity := reflect.New(typ).Interface()
 	dec := gob.NewDecoder(bytes.NewReader(b))
 	err := dec.Decode(entity)

@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/boltdb/bolt"
-	"github.com/scjudd/microservice/gob"
 	"reflect"
 )
 
@@ -29,7 +28,7 @@ func (res *Bolt) Iter() <-chan KV {
 		b := tx.Bucket(res.Bucket)
 		c := b.Cursor()
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			entity, err := gob.Unmarshal(v, res.Type)
+			entity, err := gobUnmarshal(v, res.Type)
 			if err != nil {
 				return err
 			}
@@ -52,7 +51,7 @@ func (res *Bolt) Get(id uint64) (interface{}, error) {
 		if g == nil {
 			return ErrDoesNotExist
 		}
-		entity, err = gob.Unmarshal(g, res.Type)
+		entity, err = gobUnmarshal(g, res.Type)
 		return err
 	})
 	return entity, err
@@ -64,7 +63,7 @@ func (res *Bolt) Put(id uint64, entity interface{}) error {
 		if b == nil {
 			return ErrBucketNotCreated
 		}
-		g, err := gob.Marshal(entity)
+		g, err := gobMarshal(entity)
 		if err != nil {
 			return err
 		}
@@ -89,7 +88,7 @@ func (res *Bolt) Post(entity interface{}) (uint64, error) {
 				break
 			}
 		}
-		g, err := gob.Marshal(entity)
+		g, err := gobMarshal(entity)
 		if err != nil {
 			return err
 		}
